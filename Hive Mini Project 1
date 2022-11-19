@@ -1,0 +1,143 @@
+---------------------------------------------------------------------------------
+python programs to change date formats to YYY-MM-DD 
+
+import pandas as pd
+import datetime
+df = pd.read_csv('/config/workspace/AgentPerformance.csv')
+df3 = pd.DataFrame()
+for index, row in df.iterrows():
+    #mprint("##########")
+    #print(type(row[1]))
+    #row[1] = row[1].split('/')
+    row[4] = row[4].replace(":","")
+    row[5] = row[5].replace(":","")
+    row[1] = datetime.datetime.strptime(row[1],'%m/%d/%Y').strftime('%Y-%-m-%-d')
+    print(row[1])
+
+    #row[1]=row[1][::-1].replace('/','-')
+    df3 = df3.append(row, ignore_index = True)
+
+df3.to_csv('agentperformance.csv', index=False) 
+-------------------------------------------------------------------------------------
+python programs to change date formats to YYY-MM-DD and time format to 00:00:00 to 000000
+
+import pandas as pd
+import datetime
+df = pd.read_csv('/config/workspace/AgentPerformance.csv')
+df3 = pd.DataFrame()
+for index, row in df.iterrows():
+    #mprint("##########")
+    #print(type(row[1]))
+    #row[1] = row[1].split('/')
+    row[4] = row[4].replace(":","")
+    row[5] = row[5].replace(":","")
+    row[1] = datetime.datetime.strptime(row[1],'%m/%d/%Y').strftime('%Y-%-m-%-d')
+    print(row[1])
+
+    #row[1]=row[1][::-1].replace('/','-')
+    df3 = df3.append(row, ignore_index = True)
+
+df3.to_csv('agentperformance.csv', index=False) 
+
+
+--------------------------------------------
+Question 1 and 2
+
+create table agentperformance
+(
+SLNo int,
+Datee date,
+AgentName string,
+TotalChats int,
+AverageResponseTime string,
+AverageResolutionTime string,
+AverageRating int,
+TotalFeedback int
+)
+row format delimited
+fields terminated by ',';
+
+create table agentloginreport
+(
+SLNo int,
+Agent string,
+Datee date,
+LoginTime string,
+LogoutTime string,
+Duration string
+)
+row format delimited
+fields terminated by ',';
+
+
+
+load data local inpath 'agentperformance .csv' into table agentperformance;
+
+load data local inpath 'AgentLoginREport.csv' into table agentloginreport;
+------------------------------------------------------------------------------
+
+3. List of all agents' names.
+	select distinct(agentname) from agentperformance;
+
+4.Find out agent average rating.
+	select agentname,avg(AverageRating) from agentperformance group by AgentName;
+	
+5.Total working days for each agents 
+	 select agent, count(distinct datee) from agentloginreport group by agent;
+	 
+6.Total query that each agent have taken
+	select agentname, sum(TotalFeedback) as total_feedback from agentperformance group by agentname;
+	 
+7.Total Feedback that each agent have received
+	select agentname, sum(TotalFeedback) as total_feedback from agentperformance group by agentname;
+
+8.Agent name who have average rating between 3.5 to 4 
+	select distinct(agentname),AverageRating from agentperformance where AverageRating between 3.5 and 4;
+	
+9.Agent name who have rating less than 3.5
+	select distinct(agentname) from agentperformance where averagerating <3.5;
+	
+10.Agent name who have rating more than 4.5 
+	select distinct(agentname) from agentperformance where averagerating >4.5;
+	
+11.How many feedback agents have received more than 4.5 average
+	select distinct(agentname) from agentperformance where averagerating >4.5;
+	
+12.average weekly response time for each agent
+	select agentname, AVG(AverageResponseTime) from agentperformance group by agentname;
+
+13.average weekly resolution time for each agents 
+	select agentname, AVG(AverageResolutionTime) from agentperformance group by agentname;
+	 
+14.Find the number of chat on which they have received a feedback
+	select agentname,sum(totalchats) from agentperformance group by agentname;
+
+15.Perform inner join, left join and right join based on the agent column and after joining the table export that data into your local system.
+	select * from agentperformance ap INNER JOIN agentloginreport al on ap.agentname = al.agent;
+	select * from agentperformance ap LEFT JOIN agentloginreport al on ap.agentname = al.agent;
+	select * from agentperformance ap RIGHT JOIN agentloginreport al on ap.agentname = al.agent;
+	
+	
+16.Perform partitioning on top of the agent column and then on top of that perform bucketing for each partitioning.
+create table agentloginreportpartitionbucketed
+(
+SLNo int,
+Datee date,
+LoginTime string,
+LogoutTime string,
+Duration string
+)
+partitioned by (Agent string)
+clustered by(SLNo)
+row format delimited
+fields terminated by ',';
+
+insert into table agentloginreportpartitionbucketed PARTITION(Agent) select * from agentloginreport
+
+	
+	
+	
+
+
+
+
