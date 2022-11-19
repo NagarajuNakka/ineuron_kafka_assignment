@@ -1,0 +1,201 @@
+create table parking2007
+(
+summons_number	int,
+plate_id	string,
+registration_state	string,
+plate_type	string,
+issue_date	string,
+violation_code	int,
+vehicle_body_type	string,
+vehicle_make	string,
+issuing_agency	string,
+street_code1	int,
+street_code2	int,
+street_code3	int,
+vehicle_expiration_date	int,
+violation_location	string,
+violation_precinct	int,
+issuer_precinct	int,
+issuer_code	int,
+issuer_command	string,
+issuer_squad	string,
+violation_time	string,
+time_first_observed	string,
+violation_county	string,
+violation_in_front_of_or_opposite	string,
+house_number	string,
+street_name	string,
+intersecting_street	string,
+date_first_observed	int,
+law_section	int,
+sub_division	string,
+violation_legal_code	string,
+days_parking_in_effect	string,
+from_hours_in_effect	string,
+to_hours_in_effect	string,
+vehicle_color	string,
+unregistered_vehicle	string,
+vehicle_year	int,
+meter_number	string,
+feet_from_curb	int,
+violation_post_code	string,
+violation_description	string,
+no_standing_or_stopping_violation	string,
+hydrant_violation	string,
+double_parking_violation	string
+)
+row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde'                                                                           
+with serdeproperties ("separatorChar" = ",",  "quoteChar" = "\"", "escapeChar" = "\\")     
+tblproperties('skip.header.line.count'='1');
+
+
+load data local inpath '/home/cloudera/BIGDATA/Parking.csv'
+into table parking2007;
+--------------------------------------------------------------------------------------
+CREATE TABLE `parking2007_orc`(	
+  `summons_number` int, 	
+  `plate_id` string, 	
+  `registration_state` string, 	
+  `plate_type` string, 	
+  `issue_date` date,
+  `vehicle_make` string,
+  `issuing_agency` string, 	
+  `street_code1` int, 	
+  `street_code2` int, 	
+  `street_code3` int, 	
+  `vehicle_expiration_date` date, 	
+  `violation_location` string, 	
+  `violation_precinct` int, 	
+  `issuer_precinct` int, 	
+  `issuer_code` int, 	
+  `issuer_command` string, 	
+  `issuer_squad` string, 	
+  `violation_time` timestamp, 	
+  `time_first_observed` timestamp, 	
+  `violation_county` string, 	
+  `violation_in_front_of_or_opposite` string, 	
+  `house_number` string, 	
+  `street_name` string, 	
+  `intersecting_street` string, 	
+  `date_first_observed` date, 	
+  `law_section` int, 	
+  `sub_division` string, 	
+  `violation_legal_code` string, 	
+  `days_parking_in_effect` string, 	
+  `from_hours_in_effect` string, 	
+  `to_hours_in_effect` string, 	
+  `vehicle_color` string, 	
+  `unregistered_vehicle` string, 	
+  `vehicle_year` int, 	
+  `meter_number` string, 	
+  `feet_from_curb` int, 	
+  `violation_post_code` string, 	
+  `violation_description` string, 	
+  `no_standing_or_stopping_violation` string, 	
+  `hydrant_violation` string, 	
+  `double_parking_violation` string)	
+PARTITIONED BY ( 	
+  `violation_code` int, 	
+  `vehicle_body_type` string)
+clustered by (issue_date) into 5 buckets;
+
+
+
+
+
+
+
+
+CREATE TABLE `parking2007_orc`(	
+  `summons_number` int, 	
+  `plate_id` string, 	
+  `registration_state` string, 	
+  `plate_type` string, 	
+  `issue_date` date,
+  `vehicle_make` string,
+  `issuing_agency` string, 	
+  `street_code1` int, 	
+  `street_code2` int, 	
+  `street_code3` int, 	
+  `vehicle_expiration_date` date, 	
+  `violation_location` string, 	
+  `violation_precinct` int, 	
+  `issuer_precinct` int, 	
+  `issuer_code` int, 	
+  `issuer_command` string, 	
+  `issuer_squad` string, 	
+  `violation_time` timestamp, 	
+  `time_first_observed` timestamp, 	
+  `violation_county` string, 	
+  `violation_in_front_of_or_opposite` string, 	
+  `house_number` string, 	
+  `street_name` string, 	
+  `intersecting_street` string, 	
+  `date_first_observed` date, 	
+  `law_section` int, 	
+  `sub_division` string, 	
+  `violation_legal_code` string, 	
+  `days_parking_in_effect` string, 	
+  `from_hours_in_effect` string, 	
+  `to_hours_in_effect` string, 	
+  `vehicle_color` string, 	
+  `unregistered_vehicle` string, 	
+  `vehicle_year` int, 	
+  `meter_number` string, 	
+  `feet_from_curb` int, 	
+  `violation_post_code` string, 	
+  `violation_description` string, 	
+  `no_standing_or_stopping_violation` string, 	
+  `hydrant_violation` string, 	
+  `double_parking_violation` string)	
+PARTITIONED BY ( 	
+  `violation_code` int, 	
+  `vehicle_body_type` string)
+clustered by (issue_date) into 5 buckets;
+------------------------------------------------------------------------------
+1.) Find the total number of tickets for the year.
+Ans:
+Select count(*) total_tickets from parking2007_orc;
+------------------------------------------------------------------------------
+2.) Find out how many unique states the cars which got parking tickets came from.
+Ans:
+SELECT distinct registration_state FROM parking2007_orc;
+-------------------------------------------------------------------------------
+3.) Some parking tickets don’t have addresses on them, which is cause for concern. Find out how many such tickets there are(i.e. tickets where either "Street Code 1" or "Street Code 2" or "Street Code 3" is empty )
+Ans:
+SELECT count(*) FROM parking2007_orc 
+where street_code1 = ‘0’ or street_code2 = ‘0’ or street_code3 = ‘0’ 
+---------------------------------------------------------------------------------
+1.) How often does each violation code occur? (frequency of violation codes - find the top 5)
+Ans:
+SELECT violation_code, count(*) cnt
+FROM default.parking2007_orc
+GROUP BY violation_code
+order by cnt desc limit 5
+------------------------------------------------------------------------------------------
+2.) How often does each vehicle body type get a parking ticket? How about the vehicle make? (find the top 5 for both)
+SELECT vehicle_body_type, count(*) cnt
+FROM parking2007_orc
+GROUP BY vehicle_body_type
+order by cnt desc limit 5;
+
+SELECT vehicle_make, count(*) cnt
+FROM parking2007_orc
+GROUP BY vehicle_make
+order by cnt desc limit 5;
+
+--------------------------------------------------------------------------------------------
+3.) A precinct is a police station that has a certain zone of the city under its command. Find the (5 highest) frequencies of:
+      a.) Violating Precincts (this is the precinct of the zone where the violation occurred)
+Ans:
+select violation_precinct, count(*) from parking2007_orc
+group by violation_precinct;
+------------------------------------------------------------------------------------------------
+      b.) Issuer Precincts (this is the precinct that issued the ticket)
+Ans:
+select issuer_precinct, count(*) from parking2007_orc
+group by issuer_precinct;
+----------------------------------------------------------------------------------------------------------
+
+
+
